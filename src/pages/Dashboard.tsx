@@ -5,30 +5,67 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { SmartlinkCard } from '@/components/SmartlinkCard';
 import { PlatformAnalytics } from '@/components/PlatformAnalytics';
-import { storage } from '@/lib/storage';
 import { Smartlink } from '@/types/smartlink';
 import { Plus, Search, Link, Eye, MousePointer } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+
+const API_BASE_URL = 'https://y0h0i3cye1j1.manus.space/api';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [smartlinks, setSmartlinks] = useState<Smartlink[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredSmartlinks, setFilteredSmartlinks] = useState<Smartlink[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadSmartlinks = () => {
-      const links = storage.getSmartlinks();
-      setSmartlinks(links);
-      setFilteredSmartlinks(links);
-    };
-
     loadSmartlinks();
-    
-    // Listen for storage changes (when smartlinks are updated in other tabs)
-    window.addEventListener('storage', loadSmartlinks);
-    return () => window.removeEventListener('storage', loadSmartlinks);
   }, []);
+
+  const loadSmartlinks = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/smartlinks`);
+      if (response.ok) {
+        const data = await response.json();
+        // Transformer les données de l'API pour correspondre au format frontend
+        const transformedData = data.map((item: any) => ({
+          id: item.id,
+          title: item.title || '',
+          description: item.description || '',
+          artist: item.landing_page_subtitle || '',
+          releaseDate: '',
+          coverImage: item.cover_image_url || '',
+          platforms: item.platforms || [],
+          analytics: { gtmId: '', ga4Id: '' },
+          customization: {
+            backgroundColor: '#ffffff',
+            textColor: '#000000',
+            buttonColor: '#3b82f6',
+            buttonTextColor: '#ffffff'
+          },
+          createdAt: item.created_at,
+          updatedAt: item.updated_at,
+          views: item.views || 0,
+          clicks: item.platforms?.reduce((acc: any, platform: any, index: number) => {
+            acc[platform.name] = platform.clicks || 0;
+            return acc;
+          }, {}) || {},
+          landing_page_title: item.landing_page_title,
+          landing_page_subtitle: item.landing_page_subtitle,
+          cover_image_url: item.cover_image_url,
+          embed_url: item.embed_url,
+          long_description: item.long_description,
+          social_sharing_enabled: item.social_sharing_enabled
+        }));
+        setSmartlinks(transformedData);
+        setFilteredSmartlinks(transformedData);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des smartlinks:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const filtered = smartlinks.filter(smartlink =>
@@ -47,6 +84,14 @@ export default function Dashboard() {
   const totalClicks = smartlinks.reduce((sum, link) => 
     sum + Object.values(link.clicks).reduce((clickSum, clicks) => clickSum + clicks, 0), 0
   );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+        <div className="text-xl">Chargement...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
@@ -176,3 +221,4 @@ export default function Dashboard() {
     </div>
   );
 }
+

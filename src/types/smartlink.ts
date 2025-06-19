@@ -5,6 +5,8 @@ export interface Platform {
   url: string;
   icon: string;
   color: string;
+  button_text?: string;
+  clicks?: number;
 }
 
 export interface Smartlink {
@@ -29,6 +31,13 @@ export interface Smartlink {
   updatedAt: string;
   views: number;
   clicks: Record<string, number>;
+  // Nouveaux champs pour la page de destination
+  landing_page_title?: string;
+  landing_page_subtitle?: string;
+  cover_image_url?: string;
+  embed_url?: string;
+  long_description?: string;
+  social_sharing_enabled?: boolean;
 }
 
 export interface SmartlinkFormData {
@@ -48,4 +57,25 @@ export interface SmartlinkFormData {
     buttonColor: string;
     buttonTextColor: string;
   };
+  // Nouveaux champs pour la page de destination
+  landing_page_title?: string;
+  landing_page_subtitle?: string;
+  cover_image_url?: string;
+  embed_url?: string;
+  long_description?: string;
+  social_sharing_enabled?: boolean;
 }
+
+export interface LandingPageData {
+  id: string;
+  landing_page_title: string;
+  landing_page_subtitle?: string;
+  cover_image_url?: string;
+  platforms: Platform[];
+  embed_url?: string;
+  long_description?: string;
+  social_sharing_enabled: boolean;
+  views: number;
+  clicks: number;
+}
+

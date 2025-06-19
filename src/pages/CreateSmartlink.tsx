@@ -2,11 +2,12 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { SmartlinkForm } from '@/components/SmartlinkForm';
-import { storage } from '@/lib/storage';
 import { Smartlink, SmartlinkFormData } from '@/types/smartlink';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+
+const API_BASE_URL = 'http://localhost:5001/api';
 
 export default function CreateSmartlink() {
   const navigate = useNavigate();
@@ -17,16 +18,19 @@ export default function CreateSmartlink() {
     setIsLoading(true);
     
     try {
-      const smartlink: Smartlink = {
-        id: `smartlink-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        ...formData,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        views: 0,
-        clicks: {},
-      };
+      const response = await fetch(`${API_BASE_URL}/smartlinks`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-      storage.saveSmartlink(smartlink);
+      if (!response.ok) {
+        throw new Error('Erreur lors de la création du smartlink');
+      }
+
+      const smartlink = await response.json();
       
       toast({
         title: "Smartlink créé !",
@@ -82,3 +86,4 @@ export default function CreateSmartlink() {
     </div>
   );
 }
+

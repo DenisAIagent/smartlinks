@@ -51,13 +51,41 @@ export const SmartlinkForm: React.FC<SmartlinkFormProps> = ({
       buttonColor: initialData?.customization?.buttonColor || '#3b82f6',
       buttonTextColor: initialData?.customization?.buttonTextColor || '#ffffff',
     },
+    // Nouveaux champs pour la page de destination
+    landing_page_title: initialData?.landing_page_title || '',
+    landing_page_subtitle: initialData?.landing_page_subtitle || '',
+    cover_image_url: initialData?.cover_image_url || '',
+    embed_url: initialData?.embed_url || '',
+    long_description: initialData?.long_description || '',
+    social_sharing_enabled: initialData?.social_sharing_enabled !== false,
   });
 
-  const [newPlatform, setNewPlatform] = useState({ name: '', url: '' });
+  const [newPlatform, setNewPlatform] = useState({ name: '', url: '', button_text: 'Play' });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    
+    // Transformer les données pour l'API backend
+    const apiData = {
+      title: formData.title,
+      description: formData.description,
+      url: formData.platforms[0]?.url || '', // URL principale (première plateforme)
+      landing_page_title: formData.landing_page_title || formData.title,
+      landing_page_subtitle: formData.landing_page_subtitle || formData.artist,
+      cover_image_url: formData.cover_image_url || formData.coverImage,
+      embed_url: formData.embed_url,
+      long_description: formData.long_description || formData.description,
+      social_sharing_enabled: formData.social_sharing_enabled,
+      platforms: formData.platforms.map(platform => ({
+        name: platform.name,
+        url: platform.url,
+        button_text: platform.button_text || 'Play',
+        icon: platform.icon,
+        color: platform.color
+      }))
+    };
+    
+    onSubmit(apiData);
   };
 
   const handleMagicLinkGenerated = (data: SmartlinkData) => {
@@ -66,6 +94,9 @@ export const SmartlinkForm: React.FC<SmartlinkFormProps> = ({
       title: data.title,
       artist: data.artist,
       coverImage: data.imageUrl,
+      cover_image_url: data.imageUrl,
+      landing_page_title: data.title,
+      landing_page_subtitle: data.artist,
       platforms: [
         ...prev.platforms,
         ...Object.entries(data.platforms)
@@ -77,7 +108,8 @@ export const SmartlinkForm: React.FC<SmartlinkFormProps> = ({
               name: config?.name || key,
               url: url,
               icon: config?.iconName || '🎵',
-              color: config?.color || '#6b7280'
+              color: config?.color || '#6b7280',
+              button_text: 'Play'
             };
           })
           .filter(platform => !prev.platforms.some(p => p.id === platform.id))
@@ -89,7 +121,7 @@ export const SmartlinkForm: React.FC<SmartlinkFormProps> = ({
     if (!formData.platforms.find(p => p.id === platform.id)) {
       setFormData(prev => ({
         ...prev,
-        platforms: [...prev.platforms, { ...platform, url: '' }]
+        platforms: [...prev.platforms, { ...platform, url: '', button_text: 'Play' }]
       }));
     }
   };
@@ -101,13 +133,14 @@ export const SmartlinkForm: React.FC<SmartlinkFormProps> = ({
         name: newPlatform.name,
         url: newPlatform.url,
         icon: '🔗',
-        color: '#6b7280'
+        color: '#6b7280',
+        button_text: newPlatform.button_text
       };
       setFormData(prev => ({
         ...prev,
         platforms: [...prev.platforms, platform]
       }));
-      setNewPlatform({ name: '', url: '' });
+      setNewPlatform({ name: '', url: '', button_text: 'Play' });
     }
   };
 
@@ -118,10 +151,10 @@ export const SmartlinkForm: React.FC<SmartlinkFormProps> = ({
     }));
   };
 
-  const updatePlatformUrl = (id: string, url: string) => {
+  const updatePlatform = (id: string, field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
-      platforms: prev.platforms.map(p => p.id === id ? { ...p, url } : p)
+      platforms: prev.platforms.map(p => p.id === id ? { ...p, [field]: value } : p)
     }));
   };
 
@@ -185,8 +218,72 @@ export const SmartlinkForm: React.FC<SmartlinkFormProps> = ({
               <Label>Image de couverture</Label>
               <ImageUpload
                 value={formData.coverImage}
-                onChange={(value) => setFormData(prev => ({ ...prev, coverImage: value }))}
+                onChange={(value) => setFormData(prev => ({ 
+                  ...prev, 
+                  coverImage: value,
+                  cover_image_url: value 
+                }))}
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Configuration de la page de destination */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Page de destination personnalisée</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="landing-title">Titre de la page</Label>
+                <Input
+                  id="landing-title"
+                  value={formData.landing_page_title}
+                  onChange={(e) => setFormData(prev => ({ ...prev, landing_page_title: e.target.value }))}
+                  placeholder="Laissez vide pour utiliser le titre principal"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="landing-subtitle">Sous-titre</Label>
+                <Input
+                  id="landing-subtitle"
+                  value={formData.landing_page_subtitle}
+                  onChange={(e) => setFormData(prev => ({ ...prev, landing_page_subtitle: e.target.value }))}
+                  placeholder="Laissez vide pour utiliser l'artiste"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="embed-url">URL d'intégration (YouTube, Spotify, etc.)</Label>
+              <Input
+                id="embed-url"
+                value={formData.embed_url}
+                onChange={(e) => setFormData(prev => ({ ...prev, embed_url: e.target.value }))}
+                placeholder="https://www.youtube.com/embed/..."
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="long-description">Description longue</Label>
+              <Textarea
+                id="long-description"
+                value={formData.long_description}
+                onChange={(e) => setFormData(prev => ({ ...prev, long_description: e.target.value }))}
+                rows={4}
+                placeholder="Description détaillée pour la page de destination"
+              />
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="social-sharing"
+                checked={formData.social_sharing_enabled}
+                onChange={(e) => setFormData(prev => ({ ...prev, social_sharing_enabled: e.target.checked }))}
+              />
+              <Label htmlFor="social-sharing">Activer le partage social</Label>
             </div>
           </CardContent>
         </Card>
@@ -227,6 +324,11 @@ export const SmartlinkForm: React.FC<SmartlinkFormProps> = ({
                 value={newPlatform.url}
                 onChange={(e) => setNewPlatform(prev => ({ ...prev, url: e.target.value }))}
               />
+              <Input
+                placeholder="Texte du bouton"
+                value={newPlatform.button_text}
+                onChange={(e) => setNewPlatform(prev => ({ ...prev, button_text: e.target.value }))}
+              />
               <Button type="button" onClick={addCustomPlatform}>
                 <Plus className="h-4 w-4" />
               </Button>
@@ -244,8 +346,14 @@ export const SmartlinkForm: React.FC<SmartlinkFormProps> = ({
                     <Input
                       placeholder="URL de la plateforme"
                       value={platform.url}
-                      onChange={(e) => updatePlatformUrl(platform.id, e.target.value)}
+                      onChange={(e) => updatePlatform(platform.id, 'url', e.target.value)}
                       className="flex-1"
+                    />
+                    <Input
+                      placeholder="Texte du bouton"
+                      value={platform.button_text || 'Play'}
+                      onChange={(e) => updatePlatform(platform.id, 'button_text', e.target.value)}
+                      className="w-32"
                     />
                     <Button
                       type="button"
@@ -388,3 +496,4 @@ export const SmartlinkForm: React.FC<SmartlinkFormProps> = ({
     </div>
   );
 };
+
