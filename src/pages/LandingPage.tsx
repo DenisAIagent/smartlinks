@@ -149,11 +149,11 @@ export default function LandingPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <div className="w-12 h-12 flex items-center justify-center rounded-lg bg-slate-100">
-                      <PlatformIcon platform={platform.id} size={24} />
+                      <PlatformIcon platform={platform.id || ''} size={24} />
                     </div>
                     <div>
                       <h3 className="font-semibold text-slate-900">
-                        {platform.name}
+                        {platform.name || ''}
                       </h3>
                       {platform.clicks && platform.clicks > 0 && (
                         <p className="text-sm text-slate-500">

@@ -69,9 +69,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     const filtered = smartlinks.filter(smartlink =>
-      smartlink.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      smartlink.artist.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      smartlink.description.toLowerCase().includes(searchTerm.toLowerCase())
+      smartlink.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      smartlink.artist?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      smartlink.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredSmartlinks(filtered);
   }, [searchTerm, smartlinks]);
