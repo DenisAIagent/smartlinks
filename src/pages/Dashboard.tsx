@@ -9,7 +9,7 @@ import { Smartlink } from '@/types/smartlink';
 import { Plus, Search, Link, Eye, MousePointer } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const API_BASE_URL = 'https://y0h0i3cye1j1.manus.space/api';
+const API_BASE_URL = 'https://smartlinks-backend-production.up.railway.app/api';
 
 export default function Dashboard() {
   const navigate = useNavigate();

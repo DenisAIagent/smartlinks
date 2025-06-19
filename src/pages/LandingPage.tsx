@@ -8,7 +8,7 @@ import { Share2, ExternalLink, Play } from 'lucide-react';
 import { LandingPageData, Platform } from '@/types/smartlink';
 import { PlatformIcon } from '@/components/PlatformIcons';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = 'https://smartlinks-backend-production.up.railway.app/api';
 
 export default function LandingPage() {
   const { id } = useParams<{ id: string }>();

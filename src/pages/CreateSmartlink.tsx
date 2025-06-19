@@ -7,7 +7,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = 'https://smartlinks-backend-production.up.railway.app/api';
 
 export default function CreateSmartlink() {
   const navigate = useNavigate();
